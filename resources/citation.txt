@@ -1,0 +1,7 @@
+@article{Burgert2022PeekabooTT,
+  title={Peekaboo: Text to Image Diffusion Models are Zero-Shot Segmentors},
+  author={Ryan Burgert and Kanchana Ranasinghe and Xiang Li and Michael S. Ryoo},
+  journal={ArXiv},
+  year={2022},
+  volume={abs/2211.13224}
+}
