@@ -206,11 +206,15 @@
 			<tr>
 				<td>
 					<div style="text-align: justify;">
-						<b>Zero-Shot Segmentation with phrases:</b> We highlight
-						the ability of proposed Peekaboo to ground complex language
-						prompts onto an image with no segmentation specific training. An
-						off-the-shelf diffusion model is used with only an inference time
-						optimization technique to generate these segmentations.
+<!--						<b>Zero-Shot Segmentation with phrases:</b> We highlight-->
+<!--						the ability of proposed Peekaboo to ground complex language-->
+<!--						prompts onto an image with no segmentation specific training. An-->
+<!--						off-the-shelf diffusion model is used with only an inference time-->
+<!--						optimization technique to generate these segmentations.-->
+						<b>Peekaboo</b> is a zero-shot segmentation algorithm, that takes in an image and a prompt to find the corresponding image region.
+						This is, to our knowledge, the first open-vocabulary segmentation algorithm that is aware of pop references as well as more basic tasks. What's more - it doesn't need to be trained to do this, as it uses Stable Diffusion's weights off the shelf (without fine-tuning).
+						In this paper, we show that diffusion based text-to-image models can perform zero-shot segmentation.
+						Our implementation is publicly available.
 					</div>
 				</td>
 			</tr>
