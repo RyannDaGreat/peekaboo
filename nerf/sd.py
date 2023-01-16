@@ -1,3 +1,18 @@
+"""
+This code originally came from the Stable-Dreamfusion codebase,
+
+@misc{stable-dreamfusion,
+    Author = {Jiaxiang Tang},
+    Year = {2022},
+    Note = {https://github.com/ashawkey/stable-dreamfusion},
+    Title = {Stable-dreamfusion: Text-to-3D with Stable-diffusion}
+}
+
+This is the only file from that repository we needed to use (sd.py)
+It has been heavily modified to suit Peekaboo better, but the basic concepts are the same
+I've also added tensor shape assertions into the code, so it should be easier to read
+"""
+
 from transformers import CLIPTextModel, CLIPTokenizer, logging
 from diffusers import AutoencoderKL, UNet2DConditionModel, PNDMScheduler
 from diffusers import StableDiffusionPipeline
