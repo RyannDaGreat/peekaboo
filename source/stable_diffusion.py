@@ -21,23 +21,23 @@ import torch.nn.functional as F
 
 import rp
 
-#Suppress partial model loading warning
+# Suppress partial model loading warning
 logging.set_verbosity_error()
 
 class StableDiffusion(nn.Module):
-    def __init__(self, device, checkpoint_path="CompVis/stable-diffusion-v1-4"):
+    def __init__(self, device='cuda', checkpoint_path="CompVis/stable-diffusion-v1-4"):
         super().__init__()
 
         self.device = device
         self.num_train_timesteps = 1000
         
-        #Timestep ~ U(0.02, 0.98) to avoid very high/low noise level
+        # Timestep ~ U(0.02, 0.98) to avoid very high/low noise levels
         self.min_step = int(self.num_train_timesteps * 0.02) # aka 20
         self.max_step = int(self.num_train_timesteps * 0.98) # aka 980
 
         print('[INFO] sd.py: loading stable diffusion...please make sure you have run `huggingface-cli login`.')
         
-        #Unlike the original code, I'll load these from the pipeline. This lets us use dreambooth models.
+        # Unlike the original code, I'll load these from the pipeline. This lets us use dreambooth models.
         pipe = StableDiffusionPipeline.from_pretrained(checkpoint_path, torch_dtype=torch.float)
         pipe.safety_checker = lambda images, _: images, False # Disable the NSFW checker (slows things down)
     
@@ -90,7 +90,7 @@ class StableDiffusion(nn.Module):
         
         # This method is responsible for generating the dream-loss gradients.
         
-        # interp to 512x512 to be fed into vae.
+        # interp to 512x512 to be fed into vae
         pred_rgb_512 = F.interpolate(pred_rgb, (512, 512), mode='bilinear', align_corners=False)
 
         if t is None:
@@ -118,7 +118,7 @@ class StableDiffusion(nn.Module):
         w = (1 - self.alphas[t])
         grad = w * (noise_pred - noise)
 
-        # manually backward, since we omitted an item in grad and cannot simply autodiff.
+        # manually backward, since we omitted an item in grad and cannot simply autodiff
         latents.backward(gradient=grad, retain_graph=True)
         return 0 # dummy loss value
 
@@ -138,9 +138,9 @@ class StableDiffusion(nn.Module):
             for i, t in enumerate(self.scheduler.timesteps):
                 assert int(t) == t and 0 <= t <= 999, 'Suprisingly to me...the timesteps were encoded as integers lol (np.int64)'
                 assert int(i) == i and 0 <= i <= 999, 'And because there are 1000 of them, the index is also bounded'
-                t=int(t) #Makes some schedulers happy; it's the same value anyway
+                t=int(t) # This akes some schedulers happy; it's the same value anyway.
 
-                # expand the latents if we are doing classifier-free guidance to avoid doing two forward passes.
+                # Expand the latents if we are doing classifier-free guidance to avoid doing two forward passes.
                 latent_model_input = torch.cat([latents] * 2) #The first half is the blank prompts (repeated); the second half is 
 
                 # predict the noise r['sample']
