@@ -20,3 +20,6 @@ scikit-learn
 imageio
 imageio-ffmpeg
 rp
+einops
+icecream
+accelerate
