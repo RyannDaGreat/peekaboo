@@ -1,3 +1,13 @@
+# Copyright (c) 2023 Ryan Burgert
+#
+# This code implements bilateral filtering in pytorch, with some extra functionality
+# Namely, you can use the way the blur changes an RGB image (let's call it 'image') 
+#    and apply those same changes to another image (let's call it 'alpha'). 
+#    That way, we can ensure that where image has similar colors in RGB space, alpha
+#    can have similar alpha values.
+#
+# Author: Ryan Burgert
+
 import torch
 import itertools
 import einops

@@ -1,9 +1,16 @@
+# Copyright (c) 2023 Ryan Burgert
+# 
+# This code was originally from the paper TRITON: Neural Neural Textures make Sim2Real Consistent.
+# Please see the project page at https://tritonpaper.github.io - it's quite interesting!
+# (That project was also written by me, Ryan Burgert)
+#
+# Author: Ryan Burgert
+
 import torch
 import torch.nn as nn
 import numpy as np
 import einops
 import rp
-
 
 #This file contains three types of learnable images:
 #    Raster: A simple RGB pixel grid

@@ -1,15 +1,13 @@
-"""
-Peekaboo: Text to Image Diffusion Models Are Zero-Shot Segmentors
-
-Copyright (c) 2022 Ryan Burgert
-
-This code is based on the Stable-Dreamfusion codebase's 'sd.py' by Jiaxiang Tang (https://github.com/ashawkey/stable-dreamfusion)
-which is licensed under the Apache License Version 2.0.
-It has been heavily modified to suit Peekaboo's needs, but the basic concepts remain the same.
-Tensor shape assertions have been added to the code to make it easier to read.
-
-Author: Ryan Burgert
-"""
+# Peekaboo: Text to Image Diffusion Models Are Zero-Shot Segmentors
+#
+# Copyright (c) 2023 Ryan Burgert
+#
+# This code is based on the Stable-Dreamfusion codebase's 'sd.py' by Jiaxiang Tang (https://github.com/ashawkey/stable-dreamfusion)
+# which is licensed under the Apache License Version 2.0.
+# It has been heavily modified to suit Peekaboo's needs, but the basic concepts remain the same.
+# Tensor shape assertions have been added to the code to make it easier to read.
+#
+# Author: Ryan Burgert
 
 from transformers import CLIPTextModel, CLIPTokenizer, logging
 from diffusers import AutoencoderKL, UNet2DConditionModel, PNDMScheduler
@@ -187,7 +185,7 @@ class StableDiffusion(nn.Module):
         return latents
 
     
-    def embeds_to_imgs(self, text_embeddings:torch.Tensor, 
+    def embeddings_to_imgs(self, text_embeddings:torch.Tensor, 
                      height:int=512, 
                      width:int=512,
                      num_inference_steps:int=50,
@@ -231,7 +229,7 @@ class StableDiffusion(nn.Module):
         text_embeddings = self.get_text_embeddings(prompts)
         assert text_embeddings.shape==( len(prompts)*2, 77, 768 )
         
-        return self.embeds_to_imgs(text_embeddings, height, width, num_inference_steps, guidance_scale, latents)
+        return self.embeddings_to_imgs(text_embeddings, height, width, num_inference_steps, guidance_scale, latents)
     
     def prompt_to_img(self, prompt:str, *args, **kwargs)->torch.Tensor:
         return self.prompts_to_imgs([prompt],*args,**kwargs)[0]
