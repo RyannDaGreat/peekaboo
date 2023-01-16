@@ -28,7 +28,7 @@ class StableDiffusion(nn.Module):
     def __init__(self, device='cuda', checkpoint_path="CompVis/stable-diffusion-v1-4"):
         super().__init__()
 
-        self.device = device
+        self.device = torch.device(device)
         self.num_train_timesteps = 1000
         
         # Timestep ~ U(0.02, 0.98) to avoid very high/low noise levels
@@ -105,7 +105,7 @@ class StableDiffusion(nn.Module):
         with torch.no_grad():
             # add noise
             noise = torch.randn_like(latents)
-            latents_noisy = self.scheduler.add_noise(latents, noise, t)
+            latents_noisy = self.scheduler.add_noise(latents, noise, t.cpu())
             # pred noise
             latent_model_input = torch.cat([latents_noisy] * 2)
             noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=text_embeddings)['sample']
