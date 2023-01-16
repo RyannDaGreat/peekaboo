@@ -208,6 +208,8 @@ class StableDiffusion(nn.Module):
         with torch.no_grad():
             # imgs = self.vae.decode(latents).sample
             imgs = self.vae.decode(latents)
+            if hasattr(imgs,'sample'):
+                imgs=imgs.sample #If isinstnace(imgs,DecoderOutput) - unlike in rlab
 
         imgs = (imgs / 2 + 0.5).clamp(0, 1)
         
