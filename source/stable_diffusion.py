@@ -9,6 +9,8 @@
 #
 # Author: Ryan Burgert
 
+from typing import Union,List,Optional
+
 from transformers import CLIPTextModel, CLIPTokenizer, logging
 from diffusers import AutoencoderKL, UNet2DConditionModel, PNDMScheduler
 from diffusers import StableDiffusionPipeline
@@ -16,7 +18,6 @@ from diffusers import StableDiffusionPipeline
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Union,List,Optional
 
 import rp
 
@@ -225,7 +226,7 @@ class StableDiffusion(nn.Module):
         if isinstance(prompts, str):
             prompts = [prompts]
 
-        # Prompts -> text embeddings
+        # prompts -> text embeddings
         text_embeddings = self.get_text_embeddings(prompts)
         assert text_embeddings.shape==( len(prompts)*2, 77, 768 )
         
