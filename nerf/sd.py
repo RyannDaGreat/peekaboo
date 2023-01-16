@@ -187,7 +187,7 @@ class StableDiffusion(nn.Module):
         return latents
 
     
-    def embed_to_img(self, text_embeddings:torch.Tensor, 
+    def embeds_to_imgs(self, text_embeddings:torch.Tensor, 
                      height:int=512, 
                      width:int=512,
                      num_inference_steps:int=50,
@@ -231,7 +231,7 @@ class StableDiffusion(nn.Module):
         text_embeddings = self.get_text_embeddings(prompts)
         assert text_embeddings.shape==( len(prompts)*2, 77, 768 )
         
-        return self.embed_to_img(text_embeddings, height, width, num_inference_steps, guidance_scale, latents)
+        return self.embeds_to_imgs(text_embeddings, height, width, num_inference_steps, guidance_scale, latents)
     
     def prompt_to_img(self, prompt:str, *args, **kwargs)->torch.Tensor:
         return self.prompts_to_imgs([prompt],*args,**kwargs)[0]
