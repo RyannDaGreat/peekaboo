@@ -138,14 +138,15 @@ class LearnableImageRaster(LearnableImage):
         
         #An image paramterized by pixels
 
-        self.image=nn.Parameter(torch.rand(num_channels,height,width))
+        self.image=nn.Parameter(torch.randn(num_channels,height,width))
         
     def forward(self):
         output = self.image.clone()
         
         assert output.shape==(self.num_channels, self.height, self.width)
         
-        return output
+        return torch.sigmoid(output) #Can't have values over 1 or less than 0 for peekaboo
+    
     
     
 class LearnableImageMLP(LearnableImage):

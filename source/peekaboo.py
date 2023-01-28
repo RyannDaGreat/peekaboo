@@ -18,12 +18,20 @@ from source.learnable_textures import (LearnableImageFourier,
                                        LearnableTexturePackFourier,
                                        LearnableTexturePackRaster)
 
-def make_learnable_image(height, width, num_channels, foreground=None, bilateral_kwargs:dict={}):
+def make_learnable_image(height, width, num_channels, foreground=None, bilateral_kwargs:dict={}, representation = 'fourier'):
     #Here we determine our image parametrization schema
     bilateral_blur =  BilateralProxyBlur(foreground,**bilateral_kwargs)
-    return LearnableImageFourierBilateral(bilateral_blur,num_channels) #A neural neural image
-    return LearnableImageRasterBilateral(bilateral_blur,num_channels) #A neural neural image
-    return LearnableImageFourier(height,width,num_channels) #A neural neural image
+    if representation=='fourier bilateral':
+        return LearnableImageFourierBilateral(bilateral_blur,num_channels) #A neural neural image + bilateral filter
+    elif representation=='raster bilateral':
+        return LearnableImageRasterBilateral(bilateral_blur,num_channels) #A regular image + bilateral filter
+    elif representation=='fourier':
+        return LearnableImageFourier(height,width,num_channels) #A neural neural image
+    elif representation=='raster':
+        print("Cheese peanuts")
+        return LearnableImageRaster(height,width,num_channels) #A regular image
+    else:
+        assert False, 'Invalid method: '+representation
 
 def blend_torch_images(foreground, background, alpha):
     #Input assertions
@@ -34,7 +42,7 @@ def blend_torch_images(foreground, background, alpha):
     return foreground*alpha + background*(1-alpha)
 
 class PeekabooSegmenter(nn.Module):
-    def __init__(self, image:np.ndarray, labels:List['BaseLabel'], size:int=256, name:str='Untitled', bilateral_kwargs:dict={}):
+    def __init__(self, image:np.ndarray, labels:List['BaseLabel'], size:int=256, name:str='Untitled', bilateral_kwargs:dict={}, representation = 'fourier bilateral'):
         
         super().__init__()
         
@@ -47,6 +55,7 @@ class PeekabooSegmenter(nn.Module):
         self.width=width
         self.labels=labels
         self.name=name
+        self.representation=representation
         
         assert rp.is_image(image), 'Input should be a numpy image'
         image=rp.cv_resize_image(image,(height,width))
@@ -60,7 +69,7 @@ class PeekabooSegmenter(nn.Module):
         
         self.background=self.foreground*0 #The background will be a solid color for now
         
-        self.alphas=make_learnable_image(height,width,num_channels=self.num_labels,foreground=self.foreground)
+        self.alphas=make_learnable_image(height,width,num_channels=self.num_labels,foreground=self.foreground,representation=self.representation,bilateral_kwargs=bilateral_kwargs)
             
     @property
     def num_labels(self):
@@ -101,7 +110,8 @@ class PeekabooSegmenter(nn.Module):
 def display(self):
     #This is a method of PeekabooSegmenter, but can be changed without rewriting the class if you want to change the display
 
-    colors = [(0,0,0), (1,1,1), ]#(1,0,0), (0,1,0), (0,0,1)] #Colors used to make the display
+    colors = [(1,0,0), (0,1,0), (0,0,1),]#(1,0,0), (0,1,0), (0,0,1)] #Colors used to make the display
+    colors = [rp.random_rgb_float_color() for _ in range(3)]
     alphas = rp.as_numpy_array(self.alphas())
     image = self.image
     assert alphas.shape==(self.num_labels, self.height, self.width)
@@ -140,8 +150,38 @@ def display(self):
         rp.labeled_images(alphas,label_names),
         *composites
     ])
+    
+    assert rp.is_image(self.image)
+    assert rp.is_image(alphas[0])
+    assert rp.is_image(composites[0][0])
+    assert rp.is_image(composites[1][0])
+    assert rp.is_image(composites[2][0])
 
-    output_image = rp.horizontally_concatenated_images(stats_image, composite_grid)
+    output_image = rp.labeled_image(
+        rp.tiled_images(
+            rp.labeled_images(
+                [
+                    self.image,
+                    alphas[0],
+                    composites[0][0],
+                    composites[1][0],
+                    composites[2][0],
+                ],
+                [
+                    "Input Image",
+                    "Alpha Map",
+                    "Background #1",
+                    "Background #2",
+                    "Background #3",
+                ],
+            ),
+            length=2 + len(composites),
+        ),
+        label_names[0],
+    )
+
+
+    # output_image = rp.horizontally_concatenated_images(stats_image, composite_grid)
 
     rp.display_image(output_image)
 
@@ -182,7 +222,6 @@ class MeanLabel(BaseLabel):
         prompts=rp.detuple(prompts)
         super().__init__(name, get_mean_embedding(prompts))
     
-
 def log_cell(cell_title):
     rp.fansi_print("<Cell: %s>"%cell_title, 'cyan', 'underlined')
     # rp.ptoc()
@@ -248,7 +287,7 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
                 GRAVITY=1e-1/2, # This is the one that needs the most tuning, depending on the prompt...
                 #   ...usually one of the following GRAVITY will work well: 1e-2, 1e-1/2, 1e-1, or 1.5*1e-1
                 NUM_ITER=300,       # 300 is usually enough
-                LEARNING_RATE=1e-5, # Can be larger if not using neural neural textures
+                LEARNING_RATE=1e-5, # Can be larger if not using neural neural textures (aka when representation is raster)
                 BATCH_SIZE=1,       # Doesn't make much difference, larger takes more vram
                 GUIDANCE_SCALE=100, # The defauly value from the DreamFusion paper
                 bilateral_kwargs=dict(kernel_size = 3,
@@ -257,7 +296,7 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
                                       iterations=40,
                                      ),
                 square_image_method='crop', #Can be either 'crop' or 'scale' - how will we square the input image?
-                 
+                representation='fourier bilateral', #Can be 'fourier bilateral', 'raster bilateral', 'fourier', or 'raster'
                 )->PeekabooResults:
     
     if label is None: 
@@ -276,17 +315,18 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
     
     
     log_cell('Get Hyperparameters') ########################################################################
-    icecream.ic(GRAVITY, BATCH_SIZE, NUM_ITER, GUIDANCE_SCALE,  bilateral_kwargs)
+    icecream.ic(GRAVITY, BATCH_SIZE, NUM_ITER, LEARNING_RATE, GUIDANCE_SCALE,  representation, bilateral_kwargs, square_image_method)
 
 
 
     # log_cell('Alpha Initializer') ########################################################################
 
-    p=PeekabooSegmenter(image,labels=[label], name=name, bilateral_kwargs=bilateral_kwargs).to(device)
+    p=PeekabooSegmenter(image,labels=[label], name=name, bilateral_kwargs=bilateral_kwargs, representation=representation).to(device)
 
-    blur_image=rp.as_numpy_image(p.alphas.bilateral_blur(p.foreground))
-    print("The bilateral blur applied to the input image before/after, to visualize it")
-    rp.display_image(rp.tiled_images(rp.labeled_images([rp.as_numpy_image(p.foreground),blur_image],['before','after'])))
+    if 'bilateral' in representation:
+        blur_image=rp.as_numpy_image(p.alphas.bilateral_blur(p.foreground))
+        print("The bilateral blur applied to the input image before/after, to visualize it")
+        rp.display_image(rp.tiled_images(rp.labeled_images([rp.as_numpy_image(p.foreground),blur_image],['before','after'])))
 
     p.display();
 
@@ -354,6 +394,7 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         NUM_ITER=NUM_ITER,
         GUIDANCE_SCALE=GUIDANCE_SCALE,
         bilateral_kwargs=bilateral_kwargs,
+        representation=representation,
         
         #Keep track of the inputs used
         label=label,
@@ -363,7 +404,7 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         #Record some extra info
         preview_image=p.display(),
         timelapse_frames=rp.as_numpy_array(timelapse_frames),
-        blur_image=blur_image,
+        **({'blur_image':blur_image} if 'blur_image' in dir() else {}),
         height=p.height,
         width=p.width,
         p_name=p.name,
