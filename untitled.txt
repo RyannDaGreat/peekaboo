@@ -1,0 +1,54 @@
+        # img=rp.load_image("https://www.padoniavets.com/sites/default/files/field/image/cats-and-dogs.jpg",use_cache=True)
+        # img=rp.load_image("https://img.etimg.com/thumb/msid-79778298,width-650,imgsize-1290800,,resizemode-4,quality-100/sales-of-classic-cars-have-remained-positively-stable-in-2020-.jpg",use_cache=True)
+        # img=rp.load_image("https://s2.r29static.com/bin/entry/bc7/0,46,460,460/1200x1200,80/1333127/image.jpg",use_cache=True)
+        # img=rp.load_image("https://s.yimg.com/ny/api/res/1.2/HIg4XSC.pN9vPMx_MHTv5w--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MA--/https://s.yimg.com/os/creatr-uploaded-images/2021-10/69705cc0-2ac8-11ec-973b-482c29ca5c68",use_cache=True)
+        # img=rp.load_image("https://assets.teenvogue.com/photos/569e7d2a74da98670ff0ce1c/1:1/w_2159,h_2159,c_limit/MCDHAPO_EC797_H.JPG",use_cache=True)
+        # img=rp.load_image("https://www.nme.com/wp-content/uploads/2021/08/pokemon_brilliant_diamond_and_shining_pearl_starters_turtwig_chimchar_piplup.jpeg",use_cache=True)
+        # img=rp.load_image("https://images.genius.com/ce44822bee903c5e777c004c8bcaa1ef.300x300x1.jpg",use_cache=True)
+        # img=rp.load_image("https://w0.peakpx.com/wallpaper/936/113/HD-wallpaper-wall-e-and-eve-and-e-wall-eve.jpg",use_cache=True)
+        # img=rp.load_image("https://www.irishtimes.com/resizer/q5bI2nij6BAIDT8AZeKKpyvm8T4=/1600x1200/filters:format(jpg):quality(70)/cloudfront-eu-central-1.images.arcpublishing.com/irishtimes/UDNDFXTEMKENA5YILPWQMHCKXU.jpg",use_cache=True)
+        # img=rp.load_image("ducks.png",use_cache=True)
+        # img=rp.load_image("five_sodas.png",use_cache=True)
+        # img=rp.load_image("jam_jelly_beans.png",use_cache=True)
+        # img=rp.load_image("https://64.media.tumblr.com/909bb24eae0b533481627a2963528da7/5fa507f8401885d2-f2/s540x810/48b07eb60b44467ddfd4892b616ec8d6812ddea4.jpg",use_cache=True)
+        # img=rp.load_image("https://www.slashfilm.com/img/gallery/star-trek-picard-season-3-features-the-best-material-yet-for-dr-crusher-according-to-gates-mcfadden-comic-con/crushers-role-in-star-trek-1658612419.jpg",use_cache=True)
+        # img=rp.load_image("https://akns-images.eonline.com/eol_images/Entire_Site/2016917/rs_600x600-161017135949-600.finding-dory-2.101716.jpg")
+        # img=rp.load_image("https://m.media-amazon.com/images/I/519l1cA-sTL.jpg")
+        img=rp.load_image("https://www.shutterstock.com/image-photo/dog-cat-under-plaid-pet-260nw-726710023.jpg")
+        img=rp.load_image("ice-cream-1.jpg")
+        # img=rp.load_image("https://ima/ges-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/bbfdfeed-2118-4cd3-873b-279837423fa9/dd8x8v4-62e42076-34e3-42ce-94c5-01547f4a7239.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2JiZmRmZWVkLTIxMTgtNGNkMy04NzNiLTI3OTgzNzQyM2ZhOVwvZGQ4eDh2NC02MmU0MjA3Ni0zNGUzLTQyY2UtOTRjNS0wMTU0N2Y0YTcyMzkucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.I5vSY99f6m8YOAdtCj6sk6ZbLtDIe-IIWwfhNswI678",use_cache=True)
+        # img=rp.crop_image(img,width=rp.get_image_height(img),origin='center')
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+                name=prompt='an old red mercedes benz car, vintage car'
+        name=prompt='harry styles'
+        name=prompt='danny devito'
+        name=prompt='Arnold Schwarzenegger'
+        name=prompt='The Harry Potter Boy'
+        name=prompt='Harry Potter'
+        name=prompt='minecraft steve'
+        name=prompt='wall-e'
+        name=prompt='white eve robot'
+        name=prompt='c3po'
+        name=prompt='rubiks cube'
+        
+        name=prompt=['yellow rubber duck','blue rubber duck','orange rubber duck','green rubber duck','pink rubber duck'];
+        name=prompt=['red rubber duck',];
+        name=prompt=['a can of mtn dew', 'a can of sprite', 'a can of dr pepper', 'dr pepper', 'sprite', 'mtn dew', 'orange', 'yellow soda', 'orange soda', 'sunkist orange', 'sunkist yellow']
+        name=prompt=['strawberry jam jar']#,'skippy peanut butter']
+        name=prompt=['makise kurisu anime girl']#,'skippy peanut butter']
+        name=prompt=['Rintarou Okabe anime boy']#,'skippy peanut butter']
+        name=prompt=['Beverly Crusher']#,'skippy peanut butter']
+        name=prompt=['Jean Luc Picard']#,'skippy peanut butter']
+        name=prompt=["Gyarados"]
+        name=prompt=["A cat"]
+        name=prompt=["Strawberry ice cream cone"]
