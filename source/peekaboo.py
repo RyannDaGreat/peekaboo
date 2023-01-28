@@ -409,6 +409,9 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         width=p.width,
         p_name=p.name,
         
+        min_step=s.min_step,
+        max_step=s.max_step,
+        
         git_hash=rp.get_current_git_hash(), 
         time_started=rp.r._format_datetime(time_started),
         time_completed=rp.r._format_datetime(rp.get_current_date()),
