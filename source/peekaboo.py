@@ -28,7 +28,6 @@ def make_learnable_image(height, width, num_channels, foreground=None, bilateral
     elif representation=='fourier':
         return LearnableImageFourier(height,width,num_channels) #A neural neural image
     elif representation=='raster':
-        print("Cheese peanuts")
         return LearnableImageRaster(height,width,num_channels) #A regular image
     else:
         assert False, 'Invalid method: '+representation
@@ -42,7 +41,16 @@ def blend_torch_images(foreground, background, alpha):
     return foreground*alpha + background*(1-alpha)
 
 class PeekabooSegmenter(nn.Module):
-    def __init__(self, image:np.ndarray, labels:List['BaseLabel'], size:int=256, name:str='Untitled', bilateral_kwargs:dict={}, representation = 'fourier bilateral'):
+    def __init__(self,
+                 image:np.ndarray,
+                 labels:List['BaseLabel'],
+                 size:int=256,
+                 name:str='Untitled',
+                 bilateral_kwargs:dict={},
+                 representation = 'fourier bilateral',
+                 min_step=None,
+                 max_step=None,
+                ):
         
         super().__init__()
         
@@ -56,6 +64,8 @@ class PeekabooSegmenter(nn.Module):
         self.labels=labels
         self.name=name
         self.representation=representation
+        self.min_step=min_step
+        self.max_step=max_step
         
         assert rp.is_image(image), 'Input should be a numpy image'
         image=rp.cv_resize_image(image,(height,width))
@@ -86,26 +96,36 @@ class PeekabooSegmenter(nn.Module):
         self.set_background_color(rp.random_rgb_float_color())
         
     def forward(self, alphas=None, return_alphas=False):
-        output_images = []
-        
-        if alphas is None:
-            alphas=self.alphas()
-        
-        assert alphas.shape==(self.num_labels, self.height, self.width)
-        assert alphas.min()>=0 and alphas.max()<=1
-        
-        for alpha in alphas:
-            output_image=blend_torch_images(foreground=self.foreground, background=self.background, alpha=alpha)
-            output_images.append(output_image)
-            
-        output_images=torch.stack(output_images)
-        
-        assert output_images.shape==(self.num_labels, 3, self.height, self.width) #In BCHW form
-        
-        if return_alphas:
-            return output_images, alphas
-        else:
-            return output_images
+        try:
+            old_min_step=s.min_step
+            old_max_step=s.max_step
+            s.min_step=self.min_step
+            s.max_step=self.max_step
+
+            output_images = []
+
+            if alphas is None:
+                alphas=self.alphas()
+
+            assert alphas.shape==(self.num_labels, self.height, self.width)
+            assert alphas.min()>=0 and alphas.max()<=1
+
+            for alpha in alphas:
+                output_image=blend_torch_images(foreground=self.foreground, background=self.background, alpha=alpha)
+                output_images.append(output_image)
+
+            output_images=torch.stack(output_images)
+
+            assert output_images.shape==(self.num_labels, 3, self.height, self.width) #In BCHW form
+
+            if return_alphas:
+                return output_images, alphas
+            else:
+                return output_images
+
+        finally:
+            old_min_step=s.min_step
+            old_max_step=s.max_step 
 
 def display(self):
     #This is a method of PeekabooSegmenter, but can be changed without rewriting the class if you want to change the display
@@ -297,6 +317,8 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
                                      ),
                 square_image_method='crop', #Can be either 'crop' or 'scale' - how will we square the input image?
                 representation='fourier bilateral', #Can be 'fourier bilateral', 'raster bilateral', 'fourier', or 'raster'
+                min_step=None,
+                max_step=None,
                 )->PeekabooResults:
     
     if label is None: 
@@ -321,7 +343,14 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
 
     # log_cell('Alpha Initializer') ########################################################################
 
-    p=PeekabooSegmenter(image,labels=[label], name=name, bilateral_kwargs=bilateral_kwargs, representation=representation).to(device)
+    p=PeekabooSegmenter(image,
+                        labels=[label],
+                        name=name,
+                        bilateral_kwargs=bilateral_kwargs,
+                        representation=representation, 
+                        min_step=min_step,
+                        max_step=max_step,
+                       ).to(device)
 
     if 'bilateral' in representation:
         blur_image=rp.as_numpy_image(p.alphas.bilateral_blur(p.foreground))
@@ -409,8 +438,8 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         width=p.width,
         p_name=p.name,
         
-        min_step=s.min_step,
-        max_step=s.max_step,
+        min_step=p.min_step,
+        max_step=p.max_step,
         
         git_hash=rp.get_current_git_hash(), 
         time_started=rp.r._format_datetime(time_started),
@@ -430,7 +459,7 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
     print("Saved results at %s"%output_folder)
     icecream.ic(name,label,image_path, GRAVITY, BATCH_SIZE, NUM_ITER, GUIDANCE_SCALE,  bilateral_kwargs)
     
-    
+    return results
     
 #Importing this module loads a stable diffusion model. Hope you have a GPU!
 s=sd.StableDiffusion('cuda','CompVis/stable-diffusion-v1-4')
