@@ -127,6 +127,20 @@ class LearnableImage(nn.Module):
         image=image.transpose(1,2,0)
         return image
 
+    
+class NoParamsDecoderWrapper(nn.Module):
+    #Used in LearnableLatentImage to hide the decoder's params
+    #This seems a bit hacky...
+    def __init__(self, decoder):
+        super().__init__()
+        self.decoder = decoder
+
+    def forward(self, x):
+        return self.decoder(x)
+
+    def parameters(self):
+        return iter(())
+
 
 class LearnableLatentImage(nn.Module):
     def __init__(self,
@@ -141,15 +155,14 @@ class LearnableLatentImage(nn.Module):
         self.freeze_decoder=freeze_decoder
 
         if freeze_decoder:
-            self.register_buffer("decoder", decoder)
+            self.decoder=NoParamsDecoderWrapper(decoder)
         else:
             self.decoder=decoder
 
     def forward(self):
         return self.decoder(self.learnable_image())
 
-
-class LearnableImageRaster(LearnableImage):
+class LearnableImageRasterSigmoided(LearnableImage):
     def __init__(self,
                  height      :int  ,
                  width       :int  ,
@@ -167,6 +180,27 @@ class LearnableImageRaster(LearnableImage):
         assert output.shape==(self.num_channels, self.height, self.width)
         
         return torch.sigmoid(output) #Can't have values over 1 or less than 0 for peekaboo
+    
+    
+    
+class LearnableImageRaster(LearnableImage):
+    def __init__(self,
+                 height      :int  ,
+                 width       :int  ,
+                 num_channels:int=3):
+        
+        super().__init__(height,width,num_channels)
+        
+        #An image paramterized by pixels
+
+        self.image=nn.Parameter(torch.randn(num_channels,height,width))
+        
+    def forward(self):
+        output = self.image.clone()
+        
+        assert output.shape==(self.num_channels, self.height, self.width)
+        
+        return output
     
     
     
