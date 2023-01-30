@@ -127,7 +127,28 @@ class LearnableImage(nn.Module):
         image=image.transpose(1,2,0)
         return image
 
+
+class LearnableLatentImage(nn.Module):
+    def __init__(self,
+                 learnable_image: LearnableImage,
+                 decoder        : nn.Module,
+                 freeze_decoder : bool = True):
+
+        #Take some representation of a latent space and use it to generate images
     
+        super().__init__()
+        self.learnable_image=learnable_image
+        self.freeze_decoder=freeze_decoder
+
+        if freeze_decoder:
+            self.register_buffer("decoder", decoder)
+        else:
+            self.decoder=decoder
+
+    def forward(self):
+        return self.decoder(self.learnable_image())
+
+
 class LearnableImageRaster(LearnableImage):
     def __init__(self,
                  height      :int  ,
