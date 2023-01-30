@@ -162,16 +162,18 @@ class StableDiffusion(nn.Module):
 
     def decode_latents(self, latents:torch.Tensor)->torch.Tensor:
 
+        assert len(latents.shape) == 4 and latents.shape[1] == 4  # [B, 4, H, W]
+        
         latents = 1 / 0.18215 * latents
-
-        with torch.no_grad():
-
-            imgs = self.vae.decode(latents)
-            if hasattr(imgs,'sample'):
-                #For newer versions of the Diffusers library
-                imgs=imgs.sample
+        
+        imgs = self.vae.decode(latents)
+        if hasattr(imgs,'sample'):
+            #For newer versions of the Diffusers library
+            imgs=imgs.sample
 
         imgs = (imgs / 2 + 0.5).clamp(0, 1)
+        
+        assert len(imgs.shape) == 4 and imgs.shape[1] == 3  # [B, 3, H, W]
         
         return imgs
 
@@ -182,9 +184,30 @@ class StableDiffusion(nn.Module):
         imgs = 2 * imgs - 1
         posterior = self.vae.encode(imgs)
         latents = posterior.sample() * 0.18215
+        
+        assert len(latents.shape)==4 and latents.shape[1]==4 #[B, 4, H, W]
 
         return latents
 
+    def decode_latent(self, latent: torch.Tensor) -> torch.Tensor:
+
+        assert len(latent.shape) == 3 and latent.shape[0] == 4  # [4, H, W]
+
+        img = self.decode_latents(latent[None])[0]
+
+        assert len(img.shape) == 3 and img.shape[0] == 3  # [3, H, W]
+
+        return img
+
+    def encode_img(self, img: torch.Tensor) -> torch.Tensor:
+
+        assert len(img.shape) == 3 and img.shape[0] == 3  # [3, H, W]
+
+        latent = self.encode_imgs(img[None])[0]
+
+        assert len(latent.shape) == 3 and latent.shape[0] == 4  # [4, H, W]
+
+        return latent
     
     def embeddings_to_imgs(self, text_embeddings:torch.Tensor, 
                      height:int=512, 
@@ -207,7 +230,8 @@ class StableDiffusion(nn.Module):
         assert latents.shape==(num_prompts, 4, 64, 64)
         
         # img latents -> imgs
-        imgs = self.decode_latents(latents) 
+        with torch.no_grad:
+            imgs = self.decode_latents(latents) 
         assert imgs.shape==(num_prompts,3,512,512)
 
         # torch imgs -> numpy imgs
