@@ -7,7 +7,7 @@ import rp
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
-def get_clip_logits(image: Union[torch.Tensor, np.ndarray], prompts: List[str]) -> Union[torch.Tensor, np.ndarray]:
+def get_clip_logits(image: Union[torch.Tensor, np.ndarray], prompts: Union[List[str], str]) -> Union[torch.Tensor, np.ndarray]:
     """
     Takes a torch image and a list of prompt strings and returns a vector of log-likelihoods.
     The gradients can be propogated back into the image.
@@ -21,6 +21,9 @@ def get_clip_logits(image: Union[torch.Tensor, np.ndarray], prompts: List[str]) 
     Returns:
         Union[torch.Tensor, np.ndarray]: Vector of log-likelihoods in the form of a torch.Tensor if the input is a torch.Tensor or a numpy array if the input is a numpy array.
     """
+    
+    if isinstance(prompts, str):
+        prompts=[prompts]
     
     if rp.is_image(image):
         # This block adds compatiability for numpy images
