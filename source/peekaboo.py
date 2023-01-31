@@ -16,7 +16,8 @@ from source.learnable_textures import (LearnableImageFourier,
                                        LearnableImageRaster,
                                        LearnableImageRasterBilateral,
                                        LearnableTexturePackFourier,
-                                       LearnableTexturePackRaster)
+                                       LearnableTexturePackRaster,
+                                      LearnableImageRasterSigmoided)
 
 def make_learnable_image(height, width, num_channels, foreground=None, bilateral_kwargs:dict={}, representation = 'fourier'):
     #Here we determine our image parametrization schema
@@ -28,7 +29,7 @@ def make_learnable_image(height, width, num_channels, foreground=None, bilateral
     elif representation=='fourier':
         return LearnableImageFourier(height,width,num_channels) #A neural neural image
     elif representation=='raster':
-        return LearnableImageRaster(height,width,num_channels) #A regular image
+        return LearnableImageRasterSigmoided(height,width,num_channels) #A regular image
     else:
         assert False, 'Invalid method: '+representation
 
@@ -64,8 +65,8 @@ class PeekabooSegmenter(nn.Module):
         self.labels=labels
         self.name=name
         self.representation=representation
-        self.min_step=min_step
-        self.max_step=max_step
+        self.min_step=s.min_step if min_step is None else min_step
+        self.max_step=s.max_step if max_step is None else max_step
         
         assert rp.is_image(image), 'Input should be a numpy image'
         image=rp.cv_resize_image(image,(height,width))
@@ -319,6 +320,8 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
                 representation='fourier bilateral', #Can be 'fourier bilateral', 'raster bilateral', 'fourier', or 'raster'
                 min_step=None,
                 max_step=None,
+                clip_coef=0,
+                use_stable_dream_loss=True,
                 )->PeekabooResults:
     
     if label is None: 
@@ -391,11 +394,21 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
                 p.randomize_background()
                 composites=p()
                 for label, composite in zip(p.labels, composites):
-                    s.train_step(label.embedding, composite[None], 
-                                 guidance_scale=GUIDANCE_SCALE
-                                )
+                    if clip_coef>0: 
+                        #Use clip instead of stable-dream-loss
+                        #You must use 'name' for the prompt in this case
+                        from .clip import get_clip_logits
+                        logit=get_clip_logits(composite, label.name)*clip_coef
+                        loss=-logit
+                        loss.sum().backward(retain_graph=True)
+                        print(float(loss.sum()))
+                    if use_stable_dream_loss:
+                        s.train_step(label.embedding, composite[None], 
+                                     guidance_scale=GUIDANCE_SCALE
+                                    )
+                        
 
-            ((alphas.sum())*GRAVITY).backward()
+            ((alphas.sum())*GRAVITY).backward(retain_graph=True)
 
             optim.step()
             optim.zero_grad()
@@ -411,6 +424,9 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         log("Interrupted early, returning current results...")
         pass
 
+    output_folder = rp.make_folder('peekaboo_results/%s'%name)
+    output_folder += '/%03i'%len(rp.get_subfolders(output_folder))
+    
                 
     # rp.ptoc()
     results = PeekabooResults(
@@ -422,6 +438,7 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         BATCH_SIZE=BATCH_SIZE,
         NUM_ITER=NUM_ITER,
         GUIDANCE_SCALE=GUIDANCE_SCALE,
+        LEARNING_RATE=LEARNING_RATE,
         bilateral_kwargs=bilateral_kwargs,
         representation=representation,
         
@@ -429,7 +446,9 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         label=label,
         image=image,
         image_path=image_path,
+        clip_coef=clip_coef,
         
+        use_stable_dream_loss=use_stable_dream_loss,
         #Record some extra info
         preview_image=p.display(),
         timelapse_frames=rp.as_numpy_array(timelapse_frames),
@@ -437,6 +456,7 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         height=p.height,
         width=p.width,
         p_name=p.name,
+        output_folder=rp.get_absolute_path(output_folder),
         
         min_step=p.min_step,
         max_step=p.max_step,
@@ -447,10 +467,6 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
         device=device,
         computer_name=rp.get_computer_name(),
     ) 
-    
-    output_folder = rp.make_folder('peekaboo_results/%s'%name)
-    output_folder += '/%03i'%len(rp.get_subfolders(output_folder))
-    
 
     save_peekaboo_results(results,output_folder)
     print("Please wait - creating a training timelapse")
