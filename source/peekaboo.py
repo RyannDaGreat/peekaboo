@@ -478,5 +478,5 @@ def run_peekaboo(name:str, image:Union[str,np.ndarray], label:Optional['BaseLabe
     return results
     
 #Importing this module loads a stable diffusion model. Hope you have a GPU!
-s=sd.StableDiffusion('cuda','CompVis/stable-diffusion-v1-4')
+s=sd.StableDiffusion('cuda:0','CompVis/stable-diffusion-v1-4')
 device=s.device
