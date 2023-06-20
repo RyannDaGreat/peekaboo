@@ -171,7 +171,8 @@
 				<tr>
 					<td align=center width=120px>
 						<div style="text-align: center;">
-							<span style="font-size:24px"><a href='https://arxiv.org/abs/2211.13224'>[Paper]</a></span>
+							<span style="font-size:24px"><a href='resources/peekaboo_paper.pdf'>[Paper]</a></span>
+							<!-- <span style="font-size:24px"><a href='https://arxiv.org/abs/2211.13224'>[Paper]</a></span> -->
 						</div>
 					</td>
 					<td align=center width=120px>
@@ -230,7 +231,7 @@
 		<tr>
 			<td>
 				<div style="text-align: justify;">
-					Recent diffusion-based generative models combined with vision-language models are capable of creating
+					<!-- Recent diffusion-based generative models combined with vision-language models are capable of creating
 					realistic images from natural language prompts. While these models are trained on large internet-scale
 					datasets, such pre-trained models are not directly introduced to any semantic localization or grounding.
 					Most current approaches for localization or grounding rely on human-annotated localization information
@@ -242,7 +243,8 @@
 					segmentation masks conditioned on natural language. We evaluate our proposal Peekaboo for unsupervised 
 					semantic segmentation on the Pascal VOC dataset. In addition, we evaluate for referring segmentation on
 					the RefCOCO dataset. In summary, we present a first zero-shot, open-vocabulary, unsupervised (no localization
-					information), semantic grounding technique leveraging diffusion-based generative models with no re-training.
+					information), semantic grounding technique leveraging diffusion-based generative models with no re-training. -->
+					Recently, text-to-image diffusion models have shown remarkable capabilities in creating realistic images from natural language prompts. However, few works have explored using these models for semantic localization or grounding. In this work, we explore how an off-the-shelf text-to-image diffusion model, trained without exposure to localization information, can ground various semantic phrases without segmentation-specific re-training. We introduce an inference time optimization process capable of generating segmentation masks conditioned on natural language prompts. Our proposal, Peekaboo, is a first-of-its-kind zero-shot, open-vocabulary, unsupervised semantic grounding technique leveraging diffusion models without any training. We evaluate Peekaboo on the Pascal VOC dataset for unsupervised semantic segmentation and the RefCOCO dataset for referring segmentation, show- ing results competitive with promising results. We also demonstrate how Peekaboo can be used to generate images with transparency, even though the underlying diffusion model was only trained on RGB images - which to our knowledge we are the first to attempt.
 				</div>
 			</td>
 		</tr>
@@ -257,7 +259,12 @@
 
 			<td width=700px>
 				<div style="text-align: center;">
-					<img class="round" style="width:700px" src="./resources/method.png"/>
+					<img class="round" style="width:700px" src="./resources/iterdiagram.pdf"/>
+					<br>
+					<br>
+					<br>
+					<img class="round" style="width:700px" src="./resources/Newdia.pdf"/>
+					<!-- <img class="round" style="width:700px" src="./resources/method.png"/> -->
 				</div>
 			</td>
 		</tr>
